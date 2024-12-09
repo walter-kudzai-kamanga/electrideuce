@@ -56,10 +56,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     Spacer(),
                     const SizedBox(
-                      width: 260,
+                      width: 270,
                       child: Column(children: [
                         Text(
-                          "BluJoe`s Garage",
+                          "BluJoe's Garage",
                           style: TextStyle(
                               fontSize: 60, fontFamily: "Poppins", height: 1.2),
                         ),

@@ -1,3 +1,4 @@
+import 'package:electrideuce/screens/garage.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 
@@ -7,12 +8,12 @@ class home_screen extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
-
+//i have added garage file and initialized it in the screen list final screens=[garage(),......]
 class _MyAppState extends State<home_screen> {
   int index = 0;
-  final screens = [];
-
-  @override
+  final screens = [garage()];
+  
+    @override
   Widget build(BuildContext context) => Scaffold(
         body: screens[index],
         bottomNavigationBar: NavigationBarTheme(

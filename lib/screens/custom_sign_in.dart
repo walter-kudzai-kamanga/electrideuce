@@ -39,7 +39,7 @@ Future<Object?> customSigninDialog(BuildContext context,
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          "Access your prepaid meter  and bill payment account.",
+                          "Book An Appointment With Us .",
                           textAlign: TextAlign.center,
                         ),
                       ),
