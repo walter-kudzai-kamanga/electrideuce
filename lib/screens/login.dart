@@ -15,7 +15,7 @@ class SignInForm extends StatefulWidget {
 }
 
 class _SignInFormState extends State<SignInForm> {
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isShowLoading = false;
   bool isShowConfetti = false;
 
@@ -115,18 +115,18 @@ class _SignInFormState extends State<SignInForm> {
                   child: ElevatedButton.icon(
                       onPressed: () async {
                         signIn(context);
-                        /*  await Navigator.push(
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => home_screen()),
-                        );*/
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF77D8E),
                           minimumSize: const Size(double.infinity, 56),
                           shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(10),
+                                  topLeft: Radius.circular(25),
                                   topRight: Radius.circular(25),
                                   bottomRight: Radius.circular(25),
                                   bottomLeft: Radius.circular(25)))),

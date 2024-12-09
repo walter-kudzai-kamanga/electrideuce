@@ -59,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       width: 260,
                       child: Column(children: [
                         Text(
-                          "ZESA",
+                          "BluJoe`s Garage",
                           style: TextStyle(
                               fontSize: 60, fontFamily: "Poppins", height: 1.2),
                         ),
@@ -67,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           height: 16,
                         ),
                         Text(
-                            "Our vision is to be a leading and dynamic provider of electricity, engineering, and telecommunications services.")
+                            "Our vision is to be a leading and dynamic provider of best car services.")
                       ]),
                     ),
                     const Spacer(
@@ -92,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Text(
-                        "To be the preferred provider of electricity regionally and related services globally.",
+                        "To be the preferred car mechanic regionally and related services globally.",
                         style: TextStyle(),
                       ),
                     )

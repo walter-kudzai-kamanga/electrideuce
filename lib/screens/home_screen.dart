@@ -17,7 +17,7 @@ class _MyAppState extends State<home_screen> {
         body: screens[index],
         bottomNavigationBar: NavigationBarTheme(
           data: NavigationBarThemeData(
-            indicatorColor: Colors.blue.shade100,
+             indicatorColor: Colors.blue.shade100,
             labelTextStyle: MaterialStateProperty.all(
               const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
