@@ -1,17 +1,17 @@
-
-
-
 import 'package:flutter/material.dart';
 
-class garage extends StatelessWidget{
+class garage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-
-    
-   );
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+    );
   }
-
-
-  
 }

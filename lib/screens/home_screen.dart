@@ -1,4 +1,8 @@
 import 'package:electrideuce/screens/garage.dart';
+import 'package:electrideuce/screens/history.dart';
+import 'package:electrideuce/screens/home.dart';
+import 'package:electrideuce/screens/indexes.dart';
+import 'package:electrideuce/screens/payment.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 
@@ -8,17 +12,18 @@ class home_screen extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
+
 //i have added garage file and initialized it in the screen list final screens=[garage(),......]
 class _MyAppState extends State<home_screen> {
   int index = 0;
-  final screens = [garage()];
-  
-    @override
+  final screens = [garage(), history(), payment(), indexes(), home()];
+
+  @override
   Widget build(BuildContext context) => Scaffold(
         body: screens[index],
         bottomNavigationBar: NavigationBarTheme(
           data: NavigationBarThemeData(
-             indicatorColor: Colors.blue.shade100,
+            indicatorColor: Colors.blue.shade100,
             labelTextStyle: MaterialStateProperty.all(
               const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
