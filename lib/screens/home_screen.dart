@@ -1,69 +1,95 @@
-import 'package:electrideuce/screens/garage.dart';
-import 'package:electrideuce/screens/history.dart';
-import 'package:electrideuce/screens/home.dart';
-import 'package:electrideuce/screens/indexes.dart';
-import 'package:electrideuce/screens/payment.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:provider/provider.dart';
+import 'package:medisync_hms/constants.dart';
+import 'package:medisync_hms/providers/hms_provider.dart';
+import 'package:medisync_hms/screens/dashboard_screen.dart';
+import 'package:medisync_hms/screens/patients_screen.dart';
+import 'package:medisync_hms/screens/appointments_screen.dart';
+import 'package:medisync_hms/screens/more_screen.dart';
 
-void main() => runApp(home_screen());
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
-class home_screen extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-//i have added garage file and initialized it in the screen list final screens=[garage(),......]
-class _MyAppState extends State<home_screen> {
-  int index = 0;
-  final screens = [garage(), history(), payment(), indexes(), home()];
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const PatientsScreen(),
+    const AppointmentsScreen(),
+    const MoreScreen(),
+  ];
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: screens[index],
-        bottomNavigationBar: NavigationBarTheme(
-          data: NavigationBarThemeData(
-            indicatorColor: Colors.blue.shade100,
-            labelTextStyle: MaterialStateProperty.all(
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+  Widget build(BuildContext context) {
+    final provider = context.watch<HMSProvider>();
+
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 20,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _navItem(0, Icons.dashboard_rounded, Icons.dashboard_outlined, 'Dashboard'),
+                _navItem(1, Icons.people_rounded, Icons.people_outline_rounded, 'Patients'),
+                _navItem(2, Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'Schedule'),
+                _navItem(3, Icons.grid_view_rounded, Icons.grid_view_outlined, 'More'),
+              ],
             ),
           ),
-          child: NavigationBar(
-              height: 60,
-              backgroundColor: Colors.grey.shade300,
-              labelBehavior:
-                  NavigationDestinationLabelBehavior.onlyShowSelected,
-              selectedIndex: index,
-              animationDuration: const Duration(seconds: 3),
-              onDestinationSelected: (index) =>
-                  setState(() => this.index = index),
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Ionicons.home_outline),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: Icon(Ionicons.reader_outline),
-                  selectedIcon: Icon(Ionicons.reader),
-                  label: 'Indexes',
-                ),
-                NavigationDestination(
-                  icon: Icon(Ionicons.wallet_outline),
-                  selectedIcon: Icon(Ionicons.wallet),
-                  label: 'Payment',
-                ),
-                NavigationDestination(
-                  icon: Icon(Ionicons.list_outline),
-                  selectedIcon: Icon(Ionicons.list),
-                  label: 'History',
-                ),
-                NavigationDestination(
-                  icon: Icon(Ionicons.information_circle_outline),
-                  selectedIcon: Icon(Ionicons.information_circle),
-                  label: 'Infor',
-                ),
-              ]),
         ),
-      );
+      ),
+    );
+  }
+
+  Widget _navItem(int index, IconData activeIcon, IconData inactiveIcon, String label) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? kPrimaryColor.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? activeIcon : inactiveIcon,
+              color: isSelected ? kPrimaryColor : kTextLight,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? kPrimaryColor : kTextLight,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

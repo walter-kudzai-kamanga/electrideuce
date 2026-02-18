@@ -1,16 +1,16 @@
-import 'package:electrideuce/screens/login.dart';
+import 'package:medisync_hms/screens/login.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:medisync_hms/constants.dart';
 
 Future<Object?> customSigninDialog(BuildContext context,
     {required ValueChanged onClosed}) {
   return showGeneralDialog(
       barrierDismissible: true,
-      barrierLabel: "Sign up",
+      barrierLabel: "Sign In",
       context: context,
       transitionDuration: const Duration(milliseconds: 400),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        Tween<Offset> tween = Tween(begin: Offset(0, -1), end: Offset.zero);
+        Tween<Offset> tween = Tween(begin: const Offset(0, -1), end: Offset.zero);
         return SlideTransition(
             position: tween.animate(
                 CurvedAnimation(parent: animation, curve: Curves.easeInOut)),
@@ -18,94 +18,67 @@ Future<Object?> customSigninDialog(BuildContext context,
       },
       pageBuilder: (context, _, __) => Center(
             child: Container(
-              height: 620,
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
               decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: const BorderRadius.all(Radius.circular(40))),
+                color: Colors.white.withOpacity(0.97),
+                borderRadius: const BorderRadius.all(Radius.circular(32)),
+              ),
               child: Scaffold(
                 backgroundColor: Colors.transparent,
-                resizeToAvoidBottomInset:
-                    false, // avoid overflow error when keyboard shows up
+                resizeToAvoidBottomInset: false,
                 body: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Column(children: [
-                      const Text(
-                        "Sign In",
-                        style: TextStyle(fontSize: 34, fontFamily: "Poppins"),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          "Book An Appointment With Us .",
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SignInForm(),
-                      const Row(
+                    SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: Divider(),
+                          // Header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  gradient: kPrimaryGradient,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.local_hospital, color: Colors.white, size: 22),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'MediSync',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.bold,
+                                  color: kTextDark,
+                                ),
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              "OR",
-                              style: TextStyle(color: Colors.black26),
-                            ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Sign in to your account',
+                            style: TextStyle(color: kTextLight, fontSize: 13),
                           ),
-                          Expanded(
-                            child: Divider(),
-                          ),
+                          const SizedBox(height: 20),
+                          const SignInForm(),
                         ],
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.0),
-                        child: Text("Sign up with Email, Apple or Google",
-                            style: TextStyle(color: Colors.black54)),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {},
-                              icon: SvgPicture.asset(
-                                "assets/icons/email_box.svg",
-                                height: 64,
-                                width: 64,
-                              )),
-                          IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {},
-                              icon: SvgPicture.asset(
-                                "assets/icons/apple_box.svg",
-                                height: 64,
-                                width: 64,
-                              )),
-                          IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {},
-                              icon: SvgPicture.asset(
-                                "assets/icons/google_box.svg",
-                                height: 64,
-                                width: 64,
-                              ))
-                        ],
-                      )
-                    ]),
+                    ),
                     const Positioned(
                       left: 0,
                       right: 0,
-                      bottom: -48,
+                      bottom: -44,
                       child: CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.white,
-                        child: Icon(Icons.close, color: Colors.black),
+                        child: Icon(Icons.close, color: Colors.black54, size: 18),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

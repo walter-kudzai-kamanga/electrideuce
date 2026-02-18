@@ -1,43 +1,76 @@
-import 'package:electrideuce/screens/onboding_screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:medisync_hms/constants.dart';
+import 'package:medisync_hms/providers/hms_provider.dart';
+import 'package:medisync_hms/screens/onboding_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => HMSProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BluJoe`s Garage ',
+      title: 'MediSync HMS',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFEEF1F8),
-        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: kBgLight,
+        primaryColor: kPrimaryColor,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: kPrimaryColor,
+          primary: kPrimaryColor,
+          secondary: kAccentColor,
+        ),
         fontFamily: "Intel",
+        appBarTheme: const AppBarTheme(
+          backgroundColor: kBgWhite,
+          foregroundColor: kTextDark,
+          elevation: 0,
+          centerTitle: false,
+          titleTextStyle: TextStyle(
+            color: kTextDark,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Intel',
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: kBgCard,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kBorderRadius),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kPrimaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+        ),
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
           errorStyle: TextStyle(height: 0),
           border: defaultInputBorder,
           enabledBorder: defaultInputBorder,
-          focusedBorder: defaultInputBorder,
+          focusedBorder: focusedInputBorder,
           errorBorder: defaultInputBorder,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
       home: const OnboardingScreen(),
     );
   }
 }
-
-const defaultInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(16)),
-  borderSide: BorderSide(
-    color: Color(0xFFDEE3F2),
-    width: 1,
-  ),
-);
