@@ -5,6 +5,8 @@ import 'package:medisync_hms/models/staff.dart';
 import 'package:medisync_hms/models/appointment.dart';
 import 'package:medisync_hms/models/pharmacy.dart';
 import 'package:medisync_hms/models/billing.dart';
+import 'package:medisync_hms/models/lab_test.dart';
+import 'package:medisync_hms/models/telematics.dart';
 
 class HMSProvider extends ChangeNotifier {
   UserRole _currentRole = UserRole.admin;
@@ -364,9 +366,7 @@ class HMSProvider extends ChangeNotifier {
             type: BillItemType.medication,
             amount: 75.0),
         BillItem(
-            description: 'ECG',
-            type: BillItemType.procedure,
-            amount: 120.0),
+            description: 'ECG', type: BillItemType.procedure, amount: 120.0),
       ],
       totalAmount: 245.0,
       issuedAt: DateTime(2026, 2, 18),
@@ -477,59 +477,5 @@ class HMSProvider extends ChangeNotifier {
   void addRemoteVitals(RemoteVitals vitals) {
     _remoteVitals.add(vitals);
     notifyListeners();
-  }
-}
-
-// ─── LAB TEST MODEL ───────────────────────────────────────────────────────────
-class LabTest {
-  final String id;
-  final String patientId;
-  final String patientName;
-  final String testName;
-  final String orderedBy;
-  final DateTime orderedAt;
-  final LabTestStatus status;
-  final String? result;
-
-  LabTest({
-    required this.id,
-    required this.patientId,
-    required this.patientName,
-    required this.testName,
-    required this.orderedBy,
-    required this.orderedAt,
-    required this.status,
-    this.result,
-  });
-}
-
-enum LabTestStatus { pending, inProgress, completed }
-
-// ─── REMOTE VITALS MODEL ─────────────────────────────────────────────────────
-class RemoteVitals {
-  final String patientId;
-  final String patientName;
-  final double temperature;
-  final double weight;
-  final String bloodPressure;
-  final double glucoseLevel;
-  final DateTime recordedAt;
-
-  RemoteVitals({
-    required this.patientId,
-    required this.patientName,
-    required this.temperature,
-    required this.weight,
-    required this.bloodPressure,
-    required this.glucoseLevel,
-    required this.recordedAt,
-  });
-
-  bool get hasAbnormalValues {
-    return temperature > 37.5 ||
-        temperature < 36.0 ||
-        glucoseLevel > 11.1 ||
-        glucoseLevel < 3.9 ||
-        weight < 40;
   }
 }

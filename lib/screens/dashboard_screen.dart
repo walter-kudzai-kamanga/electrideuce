@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
@@ -21,29 +22,47 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: kBgLight,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(context, provider),
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _buildWelcomeCard(provider),
-                const SizedBox(height: 20),
-                _buildStatsRow(context, provider),
-                const SizedBox(height: 20),
-                _buildQuickActions(context, role),
-                const SizedBox(height: 20),
-                _buildTodaysAppointments(context, provider),
-                const SizedBox(height: 20),
-                if (role == UserRole.admin || role == UserRole.pharmacist)
-                  _buildPharmacyAlerts(context, provider),
-                if (role == UserRole.admin || role == UserRole.pharmacist)
-                  const SizedBox(height: 20),
-                _buildRecentActivity(context, provider),
-                const SizedBox(height: 80),
-              ]),
+      body: Stack(
+        children: [
+          // Subtle background decoration
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: kPrimaryColor.withOpacity(0.05),
+              ),
             ),
+          ),
+          CustomScrollView(
+            slivers: [
+              _buildAppBar(context, provider),
+              SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildWelcomeCard(provider),
+                    const SizedBox(height: 28),
+                    _buildStatsRow(context, provider),
+                    const SizedBox(height: 28),
+                    _buildQuickActions(context, role),
+                    const SizedBox(height: 28),
+                    _buildTodaysAppointments(context, provider),
+                    const SizedBox(height: 28),
+                    if (role == UserRole.admin || role == UserRole.pharmacist)
+                      _buildPharmacyAlerts(context, provider),
+                    if (role == UserRole.admin || role == UserRole.pharmacist)
+                      const SizedBox(height: 28),
+                    _buildRecentActivity(context, provider),
+                    const SizedBox(height: 100),
+                  ]),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -55,25 +74,32 @@ class DashboardScreen extends StatelessWidget {
       expandedHeight: 0,
       floating: true,
       snap: true,
-      backgroundColor: Colors.white,
+      backgroundColor: kBgLight.withOpacity(0.8),
       elevation: 0,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(color: Colors.transparent),
+        ),
+      ),
       title: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               gradient: kPrimaryGradient,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: kGlowShadow,
             ),
-            child: const Icon(Icons.local_hospital, color: Colors.white, size: 20),
+            child: const Icon(Icons.local_hospital_rounded,
+                color: Colors.white, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           const Text(
             'MediSync',
             style: TextStyle(
               color: kTextDark,
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',
             ),
@@ -81,32 +107,24 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       actions: [
-        Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: kTextDark),
-              onPressed: () {},
-            ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: kDangerColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          ],
+        IconButton(
+          onPressed: () {},
+          icon: Badge(
+            backgroundColor: kDangerColor,
+            child:
+                const Icon(Icons.notifications_none_rounded, color: kTextDark),
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: kPrimaryColor.withOpacity(0.1),
-            child: Icon(provider.currentRole.icon, color: kPrimaryColor, size: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: GestureDetector(
+            onTap: () {},
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: kPrimaryColor.withOpacity(0.1),
+              child: Icon(provider.currentRole.icon,
+                  color: kPrimaryColor, size: 20),
+            ),
           ),
         ),
       ],
@@ -115,81 +133,115 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildWelcomeCard(HMSProvider provider) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    final greeting = hour < 12
+        ? 'Good Morning'
+        : hour < 17
+            ? 'Good Afternoon'
+            : 'Good Evening';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      height: 180,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: kPrimaryGradient,
         borderRadius: BorderRadius.circular(kBorderRadiusLarge),
-        boxShadow: [
-          BoxShadow(
-            color: kPrimaryColor.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: kGlowShadow,
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Expanded(
+          // Decorative shapes
+          Positioned(
+            right: -30,
+            top: -30,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 40,
+            bottom: -20,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '$greeting,',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  provider.currentUserName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    provider.currentRole.displayName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          greeting,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          provider.currentUserName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(kBorderRadiusSmall),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.1)),
+                      ),
+                      child: Text(
+                        provider.currentRole.displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Today: ${_formatDate(DateTime.now())}',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
+                const Spacer(),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded,
+                        color: Colors.white70, size: 14),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatDate(DateTime.now()),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              provider.currentRole.icon,
-              color: Colors.white,
-              size: 40,
             ),
           ),
         ],
@@ -198,59 +250,61 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildStatsRow(BuildContext context, HMSProvider provider) {
-    final todayAppts = provider.todaysAppointments.length;
-    final totalPatients = provider.patients.length;
-    final pendingLabs = provider.pendingLabTests.length;
-    final lowStock = provider.lowStockDrugs.length;
-
     return Row(
       children: [
-        Expanded(child: _statCard('Patients Today', '$todayAppts', Icons.people_rounded, kPrimaryColor)),
+        Expanded(
+            child: _statCard(
+                'Appointments',
+                '${provider.todaysAppointments.length}',
+                Icons.calendar_month_rounded,
+                kPrimaryColor)),
         const SizedBox(width: 12),
-        Expanded(child: _statCard('Total Patients', '$totalPatients', Icons.folder_shared_rounded, kAccentColor)),
+        Expanded(
+            child: _statCard('Patients', '${provider.patients.length}',
+                Icons.groups_rounded, kAccentColor)),
         const SizedBox(width: 12),
-        Expanded(child: _statCard('Pending Labs', '$pendingLabs', Icons.science_rounded, kWarningColor)),
-        const SizedBox(width: 12),
-        Expanded(child: _statCard('Low Stock', '$lowStock', Icons.medication_rounded, kDangerColor)),
+        Expanded(
+            child: _statCard('Lab Files', '${provider.pendingLabTests.length}',
+                Icons.science_rounded, kWarningColor)),
       ],
     );
   }
 
   Widget _statCard(String label, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: kBgWhite,
         borderRadius: BorderRadius.circular(kBorderRadius),
-        boxShadow: kSoftShadow,
+        boxShadow: kCardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 32,
-            height: 32,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              color: color,
+              color: kTextDark,
               fontSize: 22,
               fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
             ),
           ),
           Text(
             label,
             style: const TextStyle(
               color: kTextLight,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -269,9 +323,10 @@ class DashboardScreen extends StatelessWidget {
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: kTextDark,
+            fontFamily: 'Poppins',
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -286,65 +341,79 @@ class DashboardScreen extends StatelessWidget {
   }
 
   List<Widget> _getActionsForRole(BuildContext context, UserRole role) {
-    final all = [
-      _actionCard(context, 'Patients', Icons.people_rounded, kPrimaryColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const PatientsScreen()));
+    final List<Widget> items = [
+      _actionCard(context, 'Patients', Icons.people_alt_rounded, kPrimaryColor,
+          () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const PatientsScreen()));
       }),
-      _actionCard(context, 'Appointments', Icons.calendar_month_rounded, kAccentColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentsScreen()));
+      _actionCard(context, 'Calendar', Icons.event_note_rounded, kAccentColor,
+          () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const AppointmentsScreen()));
       }),
-      _actionCard(context, 'Pharmacy', Icons.medication_rounded, kSuccessColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const PharmacyScreen()));
+      _actionCard(
+          context, 'Pharmacy', Icons.medication_liquid_rounded, kNeonGreen, () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const PharmacyScreen()));
       }),
-      _actionCard(context, 'Lab Tests', Icons.science_rounded, kWarningColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const LabScreen()));
+      _actionCard(context, 'Laboratory', Icons.biotech_rounded, kWarningColor,
+          () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const LabScreen()));
       }),
-      _actionCard(context, 'Billing', Icons.receipt_long_rounded, kDangerColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const BillingScreen()));
+      _actionCard(context, 'Finances', Icons.account_balance_wallet_rounded,
+          kDangerColor, () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const BillingScreen()));
       }),
-      _actionCard(context, 'Telematics', Icons.video_call_rounded, const Color(0xFF6B46C1), () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const TelematicsScreen()));
+      _actionCard(
+          context, 'Telematics', Icons.video_camera_front_rounded, kRoyalPurple,
+          () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const TelematicsScreen()));
       }),
     ];
 
     if (role == UserRole.admin) {
-      all.add(_actionCard(context, 'Staff', Icons.badge_rounded, kInfoColor, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const StaffScreen()));
+      items.add(
+          _actionCard(context, 'Staff', Icons.badge_rounded, kInfoColor, () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const StaffScreen()));
       }));
     }
 
-    return all;
+    return items;
   }
 
-  Widget _actionCard(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _actionCard(BuildContext context, String label, IconData icon,
+      Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: kBgWhite,
           borderRadius: BorderRadius.circular(kBorderRadius),
-          boxShadow: kSoftShadow,
+          boxShadow: kCardShadow,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: color.withOpacity(0.08),
+                shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               label,
-              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: kTextDark,
+                fontWeight: FontWeight.bold,
+                color: kTextMedium,
               ),
             ),
           ],
@@ -362,21 +431,27 @@ class DashboardScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              "Today's Appointments",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kTextDark),
+              "Today's Schedule",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: kTextDark,
+                  fontFamily: 'Poppins'),
             ),
             TextButton(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AppointmentsScreen()),
               ),
-              child: const Text('See All', style: TextStyle(color: kPrimaryColor)),
+              child: const Text('View All',
+                  style: TextStyle(
+                      color: kPrimaryColor, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
         const SizedBox(height: 8),
         if (appts.isEmpty)
-          _emptyState('No appointments today')
+          _emptyState('No appointments scheduled for today.')
         else
           ...appts.take(3).map((a) => _appointmentTile(a)),
       ],
@@ -396,65 +471,64 @@ class DashboardScreen extends StatelessWidget {
         priorityColor = kSuccessColor;
     }
 
-    Color statusColor;
-    switch (appointment.status) {
-      case AppointmentStatus.completed:
-        statusColor = kSuccessColor;
-        break;
-      case AppointmentStatus.inProgress:
-        statusColor = kInfoColor;
-        break;
-      case AppointmentStatus.cancelled:
-        statusColor = kDangerColor;
-        break;
-      default:
-        statusColor = kTextLight;
-    }
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: kBgWhite,
         borderRadius: BorderRadius.circular(kBorderRadius),
         boxShadow: kSoftShadow,
-        border: Border(left: BorderSide(color: priorityColor, width: 3)),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: kPrimaryColor.withOpacity(0.1),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: kPrimaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Text(
               appointment.patientName[0],
-              style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: kPrimaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   appointment.patientName,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: kTextDark),
                 ),
                 Text(
                   '${appointment.doctorName} • ${_formatTime(appointment.dateTime)}',
-                  style: const TextStyle(color: kTextLight, fontSize: 12),
+                  style: const TextStyle(
+                      color: kTextLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            width: 8,
+            height: 8,
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _statusLabel(appointment.status),
-              style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600),
+              color: priorityColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                    color: priorityColor.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 2),
+              ],
             ),
           ),
         ],
@@ -469,37 +543,50 @@ class DashboardScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '⚠️ Pharmacy Alerts',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kTextDark),
+          'Inventory Alerts',
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: kTextDark,
+              fontFamily: 'Poppins'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: kWarningColor.withOpacity(0.08),
+            color: kDangerColor.withOpacity(0.05),
             borderRadius: BorderRadius.circular(kBorderRadius),
-            border: Border.all(color: kWarningColor.withOpacity(0.3)),
+            border: Border.all(color: kDangerColor.withOpacity(0.1)),
           ),
           child: Column(
-            children: lowStock.map((drug) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, color: kWarningColor, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      drug.name,
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                    ),
-                  ),
-                  Text(
-                    '${drug.quantity} ${drug.unit} left',
-                    style: const TextStyle(color: kDangerColor, fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            )).toList(),
+            children: lowStock
+                .map((drug) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: kDangerColor, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              drug.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: kTextDark),
+                            ),
+                          ),
+                          Text(
+                            '${drug.quantity} left',
+                            style: const TextStyle(
+                                color: kDangerColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
           ),
         ),
       ],
@@ -512,21 +599,29 @@ class DashboardScreen extends StatelessWidget {
       children: [
         const Text(
           'Recent Activity',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kTextDark),
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: kTextDark,
+              fontFamily: 'Poppins'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(kBorderRadius),
+            color: kBgWhite,
+            borderRadius: BorderRadius.circular(kBorderRadiusLarge),
             boxShadow: kSoftShadow,
           ),
           child: Column(
             children: [
-              _activityItem(Icons.person_add_rounded, kPrimaryColor, 'New patient registered', 'Efua Mensah - P004', '2 hours ago'),
-              _activityItem(Icons.science_rounded, kWarningColor, 'Lab result uploaded', 'Renal Function Test - Kofi Acheampong', '3 hours ago'),
-              _activityItem(Icons.receipt_long_rounded, kSuccessColor, 'Bill paid', 'GHS 193.00 - Kofi Acheampong', '4 hours ago'),
-              _activityItem(Icons.video_call_rounded, const Color(0xFF6B46C1), 'Remote consultation', 'Ama Boateng - Vitals submitted', '5 hours ago'),
+              _activityItem(Icons.person_add_rounded, kPrimaryColor,
+                  'New Patient', 'Efua Mensah registered', '2h ago'),
+              _activityItem(Icons.science_rounded, kWarningColor, 'Lab Result',
+                  'Renal Test uploaded', '3h ago'),
+              _activityItem(Icons.payments_rounded, kSuccessColor, 'Billing',
+                  'GHS 193.00 payment', '4h ago'),
+              _activityItem(Icons.videocam_rounded, kRoyalPurple, 'Telematics',
+                  'Remote vitals synced', '5h ago'),
             ],
           ),
         ),
@@ -534,31 +629,44 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _activityItem(IconData icon, Color color, String title, String subtitle, String time) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+  Widget _activityItem(
+      IconData icon, Color color, String title, String subtitle, String time) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(
+            bottom: BorderSide(color: kBorderColor.withOpacity(0.5), width: 1)),
+      ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                Text(subtitle, style: const TextStyle(color: kTextLight, fontSize: 11)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: kTextDark)),
+                Text(subtitle,
+                    style: const TextStyle(color: kTextLight, fontSize: 12)),
               ],
             ),
           ),
-          Text(time, style: const TextStyle(color: kTextLight, fontSize: 11)),
+          Text(time,
+              style: const TextStyle(
+                  color: kTextLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -566,35 +674,64 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _emptyState(String message) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: kBgWhite,
         borderRadius: BorderRadius.circular(kBorderRadius),
+        border: Border.all(
+            color: kBorderColor.withOpacity(0.5), style: BorderStyle.none),
       ),
-      child: Center(
-        child: Text(message, style: const TextStyle(color: kTextLight)),
+      child: Column(
+        children: [
+          Icon(Icons.inbox_rounded,
+              color: kTextLight.withOpacity(0.3), size: 48),
+          const SizedBox(height: 16),
+          Text(message,
+              style: const TextStyle(
+                  color: kTextLight,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500)),
+        ],
       ),
     );
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return '${days[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]}';
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour > 12 ? dt.hour - 12 : dt.hour == 0 ? 12 : dt.hour;
+    final h = dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour == 0
+            ? 12
+            : dt.hour;
     final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$h:$m $period';
-  }
-
-  String _statusLabel(AppointmentStatus status) {
-    switch (status) {
-      case AppointmentStatus.scheduled: return 'Scheduled';
-      case AppointmentStatus.inProgress: return 'In Progress';
-      case AppointmentStatus.completed: return 'Completed';
-      case AppointmentStatus.cancelled: return 'Cancelled';
-    }
+    final p = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $p';
   }
 }

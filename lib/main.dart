@@ -22,29 +22,33 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'MediSync HMS',
       theme: ThemeData(
+        useMaterial3: true,
         scaffoldBackgroundColor: kBgLight,
         primaryColor: kPrimaryColor,
         colorScheme: ColorScheme.fromSeed(
           seedColor: kPrimaryColor,
           primary: kPrimaryColor,
           secondary: kAccentColor,
+          surface: kBgWhite,
+          background: kBgLight,
         ),
-        fontFamily: "Intel",
+        fontFamily: "Inter",
         appBarTheme: const AppBarTheme(
-          backgroundColor: kBgWhite,
+          backgroundColor: Colors.transparent,
           foregroundColor: kTextDark,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
             color: kTextDark,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Intel',
+            fontFamily: 'Poppins',
           ),
         ),
         cardTheme: CardThemeData(
           color: kBgCard,
           elevation: 0,
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(kBorderRadius),
           ),
@@ -53,21 +57,32 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: kPrimaryColor,
             foregroundColor: Colors.white,
+            elevation: 4,
+            shadowColor: kPrimaryColor.withOpacity(0.4),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(kBorderRadiusSmall),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
           ),
         ),
-        inputDecorationTheme: const InputDecorationTheme(
+        inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          errorStyle: TextStyle(height: 0),
+          errorStyle: const TextStyle(height: 0),
           border: defaultInputBorder,
           enabledBorder: defaultInputBorder,
           focusedBorder: focusedInputBorder,
-          errorBorder: defaultInputBorder,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          errorBorder: defaultInputBorder.copyWith(
+            borderSide: const BorderSide(color: kDangerColor),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          hintStyle: const TextStyle(color: kTextLight, fontSize: 14),
         ),
       ),
       home: const OnboardingScreen(),

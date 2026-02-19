@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
@@ -14,212 +15,237 @@ class StaffScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: kBgLight,
-      appBar: AppBar(title: const Text('Staff Management')),
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(staff.length),
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (ctx, i) => _staffCard(staff[i]),
+                childCount: staff.length,
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddStaffDialog(context, provider),
-        backgroundColor: kInfoColor,
-        icon: const Icon(Icons.person_add),
-        label: const Text('Add Staff'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Role summary
-          _buildRoleSummary(staff),
-          const SizedBox(height: 16),
-          ...staff.map((s) => _staffCard(s)),
-          const SizedBox(height: 80),
-        ],
+        onPressed: () => _showAddStaffSheet(context, provider),
+        backgroundColor: kSuccessColor,
+        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
+        label: const Text('Register Personnel',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  Widget _buildRoleSummary(List<Staff> staff) {
-    final roles = {
-      UserRole.doctor: staff.where((s) => s.role == UserRole.doctor).length,
-      UserRole.nurse: staff.where((s) => s.role == UserRole.nurse).length,
-      UserRole.labTech: staff.where((s) => s.role == UserRole.labTech).length,
-      UserRole.pharmacist: staff.where((s) => s.role == UserRole.pharmacist).length,
-      UserRole.cashier: staff.where((s) => s.role == UserRole.cashier).length,
-    };
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(kBorderRadius),
-        boxShadow: kSoftShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Total Staff: ${staff.length}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: roles.entries.map((e) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: e.key.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(e.key.icon, size: 14, color: e.key.color),
-                  const SizedBox(width: 4),
-                  Text('${e.value} ${e.key.displayName}${e.value != 1 ? 's' : ''}',
-                      style: TextStyle(color: e.key.color, fontSize: 12, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            )).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _staffCard(Staff staff) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(kBorderRadius),
-        boxShadow: kSoftShadow,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: staff.role.color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(staff.role.icon, color: staff.role.color, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(staff.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(staff.specialization.isNotEmpty
-                    ? '${staff.role.displayName} • ${staff.specialization}'
-                    : staff.role.displayName,
-                    style: const TextStyle(color: kTextLight, fontSize: 12)),
-                Text(staff.department,
-                    style: const TextStyle(color: kTextLight, fontSize: 11)),
-              ],
+  Widget _buildSliverAppBar(int count) {
+    return SliverAppBar(
+      expandedHeight: 120,
+      pinned: true,
+      backgroundColor: kSuccessColor,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.all(16),
+        title: const Text('Medical Personnel',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                fontSize: 18)),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [kSuccessColor, kSuccessColor.withBlue(100)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: staff.isAvailable
-                      ? kSuccessColor.withOpacity(0.1)
-                      : kDangerColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  staff.isAvailable ? 'Available' : 'Unavailable',
-                  style: TextStyle(
-                    color: staff.isAvailable ? kSuccessColor : kDangerColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child: Icon(Icons.badge_rounded,
+                    size: 140, color: Colors.white.withOpacity(0.1)),
               ),
-              const SizedBox(height: 4),
-              Text(staff.id, style: const TextStyle(color: kTextLight, fontSize: 10)),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  void _showAddStaffDialog(BuildContext context, HMSProvider provider) {
+  Widget _staffCard(Staff member) {
+    Color roleColor;
+    IconData roleIcon;
+    switch (member.role) {
+      case UserRole.doctor:
+        roleColor = kPrimaryColor;
+        roleIcon = Icons.medical_services_rounded;
+        break;
+      case UserRole.nurse:
+        roleColor = kInfoColor;
+        roleIcon = Icons.health_and_safety_rounded;
+        break;
+      case UserRole.pharmacist:
+        roleColor = kWarningColor;
+        roleIcon = Icons.medication_rounded;
+        break;
+      case UserRole.labTech:
+        roleColor = kDangerColor;
+        roleIcon = Icons.science_rounded;
+        break;
+      default:
+        roleColor = kTextMedium;
+        roleIcon = Icons.person_rounded;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: kBgWhite,
+        borderRadius: BorderRadius.circular(kBorderRadius),
+        boxShadow: kSoftShadow,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: roleColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(roleIcon, color: roleColor, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(member.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: kTextDark)),
+                  Text(member.specialization ?? member.role.name.toUpperCase(),
+                      style: const TextStyle(
+                          color: kTextLight,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _contactInfo(Icons.phone_rounded, member.phone),
+                      const SizedBox(width: 12),
+                      _contactInfo(Icons.email_rounded, member.email),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                  color: roleColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Text(member.department,
+                  style: TextStyle(
+                      color: roleColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _contactInfo(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: kTextLight),
+        const SizedBox(width: 4),
+        Text(text.contains('@') ? text.split('@').first : text,
+            style: const TextStyle(color: kTextLight, fontSize: 11)),
+      ],
+    );
+  }
+
+  void _showAddStaffSheet(BuildContext context, HMSProvider provider) {
     final nameCtrl = TextEditingController();
-    final phoneCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final specCtrl = TextEditingController();
-    final deptCtrl = TextEditingController();
     UserRole selectedRole = UserRole.doctor;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Padding(
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
           padding: EdgeInsets.only(
-            left: 20, right: 20, top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Add Staff Member', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<UserRole>(
-                  value: selectedRole,
-                  decoration: const InputDecoration(labelText: 'Role'),
-                  items: UserRole.values
-                      .where((r) => r != UserRole.patient)
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r.displayName)))
-                      .toList(),
-                  onChanged: (v) => setModalState(() => selectedRole = v!),
+          decoration: const BoxDecoration(
+            color: kBgWhite,
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(kBorderRadiusLarge)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Register Personnel',
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins')),
+              const SizedBox(height: 24),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Full Name',
+                  prefixIcon:
+                      const Icon(Icons.person_rounded, color: kSuccessColor),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(height: 10),
-                TextField(controller: specCtrl, decoration: const InputDecoration(labelText: 'Specialization (optional)')),
-                const SizedBox(height: 10),
-                TextField(controller: deptCtrl, decoration: const InputDecoration(labelText: 'Department')),
-                const SizedBox(height: 10),
-                TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone')),
-                const SizedBox(height: 10),
-                TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (nameCtrl.text.isEmpty) return;
-                      final id = 'S${(provider.staff.length + 1).toString().padLeft(3, '0')}';
-                      provider.addStaff(Staff(
-                        id: id,
-                        name: nameCtrl.text.trim(),
-                        role: selectedRole,
-                        specialization: specCtrl.text.trim(),
-                        phone: phoneCtrl.text.trim(),
-                        email: emailCtrl.text.trim(),
-                        department: deptCtrl.text.trim(),
-                      ));
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Staff member added!'), backgroundColor: kSuccessColor),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: kInfoColor),
-                    child: const Text('Add Staff Member'),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (nameCtrl.text.isEmpty) return;
+                    provider.addStaff(Staff(
+                      id: 'S${(provider.staff.length + 1).toString().padLeft(3, '0')}',
+                      name: nameCtrl.text.trim(),
+                      role: selectedRole,
+                      phone: '+233 00 000 0000',
+                      email:
+                          '${nameCtrl.text.toLowerCase().replaceAll(' ', '.')}@medisync.gh',
+                      department: 'General',
+                    ));
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kSuccessColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
+                  child: const Text('Complete Registration',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

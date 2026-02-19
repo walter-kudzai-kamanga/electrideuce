@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
 import 'package:medisync_hms/providers/hms_provider.dart';
+import 'package:medisync_hms/models/lab_test.dart';
 import 'package:medisync_hms/models/appointment.dart';
 import 'package:medisync_hms/models/patient.dart';
 import 'package:medisync_hms/models/pharmacy.dart';

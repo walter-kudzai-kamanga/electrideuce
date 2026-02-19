@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
@@ -14,270 +15,298 @@ class BillingScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: kBgLight,
-      appBar: AppBar(
-        title: const Text('Billing & Payments'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text('Today\'s Revenue', style: TextStyle(fontSize: 10, color: kTextLight)),
-                Text(
-                  'GHS ${provider.todayRevenue.toStringAsFixed(2)}',
-                  style: const TextStyle(color: kSuccessColor, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(provider.todayRevenue),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: bills.isEmpty
+                ? SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.account_balance_wallet_rounded,
+                              size: 60, color: kPrimaryColor.withOpacity(0.2)),
+                          const SizedBox(height: 16),
+                          const Text('No Billing History',
+                              style: TextStyle(
+                                  color: kTextLight,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  )
+                : SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (ctx, i) => _billCard(bills[bills.length - 1 - i]),
+                      childCount: bills.length,
+                    ),
+                  ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateBillDialog(context, provider),
-        backgroundColor: kDangerColor,
-        icon: const Icon(Icons.add),
-        label: const Text('New Bill'),
+        onPressed: () => _showAddBillSheet(context, provider),
+        backgroundColor: kPrimaryColor,
+        icon: const Icon(Icons.add_card_rounded, color: Colors.white),
+        label: const Text('Generate Bill',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      body: bills.isEmpty
-          ? const Center(child: Text('No bills yet', style: TextStyle(color: kTextLight)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: bills.length,
-              itemBuilder: (ctx, i) => _billCard(context, bills[i]),
-            ),
     );
   }
 
-  Widget _billCard(BuildContext context, Bill bill) {
-    Color statusColor;
-    switch (bill.status) {
-      case BillStatus.paid:
-        statusColor = kSuccessColor;
-        break;
-      case BillStatus.cancelled:
-        statusColor = kDangerColor;
-        break;
-      case BillStatus.partiallyPaid:
-        statusColor = kWarningColor;
-        break;
-      default:
-        statusColor = kInfoColor;
-    }
+  Widget _buildSliverAppBar(double revenue) {
+    return SliverAppBar(
+      expandedHeight: 160,
+      pinned: true,
+      backgroundColor: kPrimaryColor,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+        title: const Text('Revenue & Billing',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                fontSize: 18)),
+        background: Container(
+          decoration: const BoxDecoration(gradient: kPrimaryGradient),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child: Icon(Icons.payments_rounded,
+                    size: 160, color: Colors.white.withOpacity(0.1)),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Today\'s Revenue',
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500)),
+                    Text('GHS ${revenue.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _billCard(Bill bill) {
+    final isPaid = bill.status == BillStatus.paid;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: kBgWhite,
         borderRadius: BorderRadius.circular(kBorderRadius),
         boxShadow: kSoftShadow,
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(bill.patientName,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text('Bill #${bill.id} • ${_formatDate(bill.issuedAt)}',
-                            style: const TextStyle(color: kTextLight, fontSize: 12)),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(bill.status.name,
-                          style: TextStyle(color: statusColor, fontWeight: FontWeight.w600, fontSize: 12)),
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: (isPaid ? kSuccessColor : kWarningColor)
+                        .withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isPaid
+                        ? Icons.check_circle_rounded
+                        : Icons.pending_actions_rounded,
+                    color: isPaid ? kSuccessColor : kWarningColor,
+                    size: 20,
+                  ),
                 ),
-                const Divider(height: 16),
-                ...bill.items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: Row(
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _itemTypeIcon(item.type),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(item.description, style: const TextStyle(fontSize: 13))),
-                      Text('GHS ${item.total.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+                      Text(bill.patientName,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text('Inv # ${bill.id} • ${_formatDate(bill.issuedAt)}',
+                          style:
+                              const TextStyle(color: kTextLight, fontSize: 11)),
                     ],
                   ),
-                )),
-                const Divider(height: 16),
+                ),
+                _statusBadge(
+                    isPaid ? kSuccessColor : kWarningColor, bill.status.name),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                ...bill.items.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(item.description,
+                              style: const TextStyle(
+                                  color: kTextMedium, fontSize: 13)),
+                          Text('GHS ${item.amount.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13)),
+                        ],
+                      ),
+                    )),
+                const Divider(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text(
-                      'GHS ${bill.totalAmount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: kPrimaryColor,
-                      ),
-                    ),
+                    const Text('Total Amount',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: kTextDark)),
+                    Text('GHS ${bill.totalAmount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: kPrimaryColor)),
                   ],
                 ),
               ],
             ),
           ),
-          if (bill.status == BillStatus.pending)
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: kBorderColor)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () => _showPaymentDialog(context, bill),
-                      icon: const Icon(Icons.payment, size: 16),
-                      label: const Text('Pay Cash'),
-                      style: TextButton.styleFrom(foregroundColor: kSuccessColor),
-                    ),
-                  ),
-                  Container(width: 1, height: 40, color: kBorderColor),
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.health_and_safety, size: 16),
-                      label: const Text('Insurance'),
-                      style: TextButton.styleFrom(foregroundColor: kInfoColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _itemTypeIcon(BillItemType type) {
-    IconData icon;
-    Color color;
-    switch (type) {
-      case BillItemType.consultation:
-        icon = Icons.medical_services;
-        color = kPrimaryColor;
-        break;
-      case BillItemType.labTest:
-        icon = Icons.science;
-        color = kWarningColor;
-        break;
-      case BillItemType.medication:
-        icon = Icons.medication;
-        color = kSuccessColor;
-        break;
-      case BillItemType.procedure:
-        icon = Icons.healing;
-        color = kInfoColor;
-        break;
-      default:
-        icon = Icons.receipt;
-        color = kTextLight;
-    }
-    return Icon(icon, size: 14, color: color);
-  }
-
-  void _showPaymentDialog(BuildContext context, Bill bill) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Payment'),
-        content: Text(
-          'Mark GHS ${bill.totalAmount.toStringAsFixed(2)} as paid for ${bill.patientName}?',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              bill.status = BillStatus.paid;
-              bill.paymentMethod = PaymentMethod.cash;
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Payment of GHS ${bill.totalAmount.toStringAsFixed(2)} received!'),
-                  backgroundColor: kSuccessColor,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: kSuccessColor),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateBillDialog(BuildContext context, HMSProvider provider) {
-    final patientCtrl = TextEditingController();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20, right: 20, top: 20,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Create New Bill', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(controller: patientCtrl, decoration: const InputDecoration(labelText: 'Patient Name')),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (patientCtrl.text.isEmpty) return;
-                  final bills = provider.bills;
-                  final id = 'B${(bills.length + 1).toString().padLeft(3, '0')}';
-                  provider.addBill(Bill(
-                    id: id,
-                    patientId: 'WALK',
-                    patientName: patientCtrl.text.trim(),
-                    items: [
-                      BillItem(description: 'Consultation Fee', type: BillItemType.consultation, amount: 50.0),
-                    ],
-                    totalAmount: 50.0,
-                    issuedAt: DateTime.now(),
-                  ));
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bill created!'), backgroundColor: kSuccessColor),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: kDangerColor),
-                child: const Text('Create Bill'),
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _statusBadge(Color color, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20)),
+      child: Text(label.toUpperCase(),
+          style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5)),
     );
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  void _showAddBillSheet(BuildContext context, HMSProvider provider) {
+    final patientCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          decoration: const BoxDecoration(
+              color: kBgWhite,
+              borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(kBorderRadiusLarge))),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Create New Invoice',
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins')),
+              const SizedBox(height: 24),
+              TextField(
+                controller: patientCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Patient Name',
+                  prefixIcon:
+                      const Icon(Icons.person_rounded, color: kPrimaryColor),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (patientCtrl.text.isEmpty) return;
+                    final bill = Bill(
+                      id: 'B${(provider.bills.length + 1).toString().padLeft(3, '0')}',
+                      patientId: 'WALK',
+                      patientName: patientCtrl.text.trim(),
+                      items: [
+                        BillItem(
+                            description: 'General Consultation',
+                            type: BillItemType.consultation,
+                            amount: 50.0)
+                      ],
+                      totalAmount: 50.0,
+                      issuedAt: DateTime.now(),
+                      status: BillStatus.pending,
+                    );
+                    provider.addBill(bill);
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Generate Invoice',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

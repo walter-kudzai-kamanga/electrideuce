@@ -25,18 +25,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBgDark,
       body: Stack(
         children: [
-          // Background gradient
+          // Premium background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF0A6EBD),
-                  Color(0xFF064E8A),
-                  Color(0xFF032D5A),
+                  Color(0xFF0F67FD),
+                  Color(0xFF0038A7),
+                  Color(0xFF0A0E21),
                 ],
               ),
             ),
@@ -55,6 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 10),
+              child: const SizedBox(),
             ),
           ),
           const RiveAnimation.asset('assets/RiveAssets/shapes.riv'),
@@ -64,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: const SizedBox(),
             ),
           ),
-          // Overlay gradient
+          // Overlay gradient for depth
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -72,8 +74,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    kPrimaryDark.withOpacity(0.6),
-                    kPrimaryDark.withOpacity(0.85),
+                    Colors.transparent,
+                    kBgDark.withOpacity(0.8),
                   ],
                 ),
               ),
@@ -96,20 +98,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Row(
                       children: [
                         Container(
-                          width: 56,
-                          height: 56,
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withOpacity(0.2),
                               width: 1,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: kPrimaryColor.withOpacity(0.2),
+                                  blurRadius: 20),
+                            ],
                           ),
                           child: const Icon(
-                            Icons.local_hospital,
+                            Icons.local_hospital_rounded,
                             color: Colors.white,
-                            size: 32,
+                            size: 28,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -117,36 +123,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           'MediSync',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 32,
+                            fontSize: 28,
                             fontFamily: 'Poppins',
                             fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     const SizedBox(
-                      width: 300,
+                      width: 320,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hospital\nManagement\nSystem',
+                            'Elevated\nHospital\nCare',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 48,
+                              fontSize: 56,
                               fontFamily: 'Poppins',
-                              height: 1.1,
+                              height: 1.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 16),
+                          SizedBox(height: 24),
                           Text(
-                            'Streamline patient care, staff workflows, and remote monitoring — all in one platform.',
+                            'Experience a seamless hospital management ecosystem designed for the future of health-tech.',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 15,
-                              height: 1.5,
+                              fontSize: 16,
+                              height: 1.6,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -155,41 +163,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const Spacer(flex: 2),
                     // Feature chips
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        _featureChip(Icons.people, 'Patients'),
-                        _featureChip(Icons.calendar_today, 'Appointments'),
-                        _featureChip(Icons.medication, 'Pharmacy'),
-                        _featureChip(Icons.science, 'Lab Tests'),
-                        _featureChip(Icons.video_call, 'Telematics'),
-                        _featureChip(Icons.receipt_long, 'Billing'),
+                        _featureChip(Icons.people_alt_rounded, 'Patients'),
+                        _featureChip(Icons.event_note_rounded, 'Scheduler'),
+                        _featureChip(
+                            Icons.medication_liquid_rounded, 'Pharmacy'),
+                        _featureChip(
+                            Icons.video_camera_front_rounded, 'Telematics'),
                       ],
                     ),
-                    const SizedBox(height: 32),
-                    AnimatedBtn(
-                      btnAnimationController: _btnAnimationController,
-                      press: () {
-                        _btnAnimationController.isActive = true;
-                        Future.delayed(const Duration(milliseconds: 800), () {
-                          setState(() {
-                            isSignInDialogShown = true;
-                          });
-                          customSigninDialog(context, onClosed: (_) {
+                    const SizedBox(height: 48),
+                    Center(
+                      child: AnimatedBtn(
+                        btnAnimationController: _btnAnimationController,
+                        press: () {
+                          _btnAnimationController.isActive = true;
+                          Future.delayed(const Duration(milliseconds: 800), () {
                             setState(() {
-                              isSignInDialogShown = false;
+                              isSignInDialogShown = true;
+                            });
+                            customSigninDialog(context, onClosed: (_) {
+                              setState(() {
+                                isSignInDialogShown = false;
+                              });
                             });
                           });
-                        });
-                      },
+                        },
+                      ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.0),
-                      child: Text(
-                        'Secure · HIPAA-Compliant · Telematics-Ready',
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
+                      padding: EdgeInsets.symmetric(vertical: 32.0),
+                      child: Center(
+                        child: Text(
+                          'Secure • Integrated • Telematics-Ready',
+                          style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
                     ),
@@ -205,23 +219,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _featureChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white70, size: 14),
-          const SizedBox(width: 6),
+          Icon(icon, color: Colors.white, size: 16),
+          const SizedBox(width: 8),
           Text(
             label,
             style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

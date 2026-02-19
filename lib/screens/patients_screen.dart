@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
@@ -20,62 +21,86 @@ class _PatientsScreenState extends State<PatientsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<HMSProvider>();
     final patients = provider.patients
-        .where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+        .where((p) =>
+            p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             p.id.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
       backgroundColor: kBgLight,
-      appBar: AppBar(
-        title: const Text('Patients'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_rounded, color: kPrimaryColor),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PatientRegisterScreen()),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(context),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              onChanged: (v) => setState(() => _searchQuery = v),
-              decoration: InputDecoration(
-                hintText: 'Search patients by name or ID...',
-                prefixIcon: const Icon(Icons.search, color: kTextLight),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Text(
-                  '${patients.length} patients',
-                  style: const TextStyle(color: kTextLight, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
+          _buildSearchHeader(),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: patients.length,
               itemBuilder: (context, index) {
                 final patient = patients[index];
                 return _patientCard(context, patient);
               },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PatientRegisterScreen()),
+        ),
+        backgroundColor: kPrimaryColor,
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: kBgLight.withOpacity(0.8),
+      elevation: 0,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(color: Colors.transparent),
+        ),
+      ),
+      title: const Text('Patient Registry'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.filter_list_rounded, color: kTextDark),
+          onPressed: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            onChanged: (v) => setState(() => _searchQuery = v),
+            decoration: InputDecoration(
+              hintText: 'Search patients by name or ID...',
+              prefixIcon: const Icon(Icons.search_rounded,
+                  color: kPrimaryColor, size: 22),
+              filled: true,
+              fillColor: kBgWhite,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(kBorderRadiusSmall),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(kBorderRadiusSmall),
+                borderSide: BorderSide(color: kBorderColor.withOpacity(0.5)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(kBorderRadiusSmall),
+                borderSide: const BorderSide(color: kPrimaryColor, width: 1.5),
+              ),
             ),
           ),
         ],
@@ -87,31 +112,46 @@ class _PatientsScreenState extends State<PatientsScreen> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => PatientDetailScreen(patient: patient)),
+        MaterialPageRoute(
+            builder: (_) => PatientDetailScreen(patient: patient)),
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: kBgWhite,
           borderRadius: BorderRadius.circular(kBorderRadius),
           boxShadow: kSoftShadow,
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: kPrimaryColor.withOpacity(0.1),
-              child: Text(
-                patient.name[0],
-                style: const TextStyle(
-                  color: kPrimaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    kPrimaryColor.withOpacity(0.1),
+                    kPrimaryColor.withOpacity(0.05)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Center(
+                child: Text(
+                  patient.name[0],
+                  style: const TextStyle(
+                    color: kPrimaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,48 +160,69 @@ class _PatientsScreenState extends State<PatientsScreen> {
                     patient.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 16,
                       color: kTextDark,
+                      fontFamily: 'Poppins',
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${patient.id} • ${patient.age}y • ${patient.gender}',
-                    style: const TextStyle(color: kTextLight, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
-                  if (patient.chronicConditions.isNotEmpty)
-                    Wrap(
-                      spacing: 4,
-                      children: patient.chronicConditions.take(2).map((c) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: kWarningColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(c, style: const TextStyle(color: kWarningColor, fontSize: 10)),
-                      )).toList(),
-                    ),
+                  Row(
+                    children: [
+                      _badge(patient.id, kPrimaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${patient.age}y • ${patient.gender}',
+                        style: const TextStyle(
+                            color: kTextLight,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  patient.bloodGroup,
-                  style: const TextStyle(
-                    color: kDangerColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kDangerColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    patient.bloodGroup,
+                    style: const TextStyle(
+                      color: kDangerColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Icon(Icons.chevron_right, color: kTextLight),
+                const SizedBox(height: 8),
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    color: kTextLight, size: 14),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _badge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style:
+            TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
       ),
     );
   }

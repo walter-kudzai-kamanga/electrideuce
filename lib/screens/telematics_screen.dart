@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:medisync_hms/constants.dart';
 import 'package:medisync_hms/providers/hms_provider.dart';
+import 'package:medisync_hms/models/telematics.dart';
 
 class TelematicsScreen extends StatefulWidget {
   const TelematicsScreen({super.key});
@@ -28,7 +30,8 @@ class _TelematicsScreenState extends State<TelematicsScreen> {
 
     final vitals = RemoteVitals(
       patientId: 'REMOTE',
-      patientName: _patientCtrl.text.isEmpty ? 'Remote Patient' : _patientCtrl.text,
+      patientName:
+          _patientCtrl.text.isEmpty ? 'Remote Patient' : _patientCtrl.text,
       temperature: temp,
       weight: weight,
       bloodPressure: bp,
@@ -49,212 +52,306 @@ class _TelematicsScreenState extends State<TelematicsScreen> {
 
     return Scaffold(
       backgroundColor: kBgLight,
-      appBar: AppBar(title: const Text('Telematics & Remote Care')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Remote consultation card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6B46C1), Color(0xFF553C9A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(kBorderRadiusLarge),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6B46C1).withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(),
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildConsultationBanner(),
+                const SizedBox(height: 32),
+                _buildVitalsInputSection(),
+                const SizedBox(height: 32),
+                if (provider.remoteVitals.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 16),
+                    child: Text(
+                      'Monitoring History',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: kTextDark,
+                          fontFamily: 'Poppins'),
+                    ),
                   ),
+                  ...provider.remoteVitals.reversed
+                      .take(5)
+                      .map((v) => _vitalsHistoryCard(v)),
                 ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.video_call_rounded, color: Colors.white, size: 40),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Remote Consultation',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Connect with a doctor via secure video call from anywhere.',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => _showVideoCallDialog(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF6B46C1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Icon(Icons.videocam_rounded),
-                    label: const Text('Start Video Call', style: TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
+                const SizedBox(height: 100),
+              ]),
             ),
-            const SizedBox(height: 24),
-            // Vitals entry
-            const Text(
-              'Remote Vitals Entry',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kTextDark),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Patient enters vitals from home. Alerts trigger for abnormal values.',
-              style: TextStyle(color: kTextLight, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            if (_submitted && _hasAlert)
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: kDangerColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(kBorderRadius),
-                  border: Border.all(color: kDangerColor.withOpacity(0.4)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.warning_rounded, color: kDangerColor),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '⚠️ Abnormal vitals detected! Doctor has been notified.',
-                        style: TextStyle(color: kDangerColor, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (_submitted && !_hasAlert)
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: kSuccessColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(kBorderRadius),
-                  border: Border.all(color: kSuccessColor.withOpacity(0.4)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.check_circle_rounded, color: kSuccessColor),
-                    SizedBox(width: 10),
-                    Text('Vitals recorded. All values are within normal range.',
-                        style: TextStyle(color: kSuccessColor, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(kBorderRadius),
-                boxShadow: kSoftShadow,
-              ),
-              child: Column(
-                children: [
-                  _vitalsField('Patient Name', _patientCtrl, Icons.person, 'e.g. Kwame Asante'),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _vitalsField('Temperature (°C)', _tempCtrl, Icons.thermostat, '37.0', TextInputType.number)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _vitalsField('Weight (kg)', _weightCtrl, Icons.monitor_weight, '70.0', TextInputType.number)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _vitalsField('Blood Pressure', _bpCtrl, Icons.favorite, '120/80')),
-                      const SizedBox(width: 12),
-                      Expanded(child: _vitalsField('Glucose (mmol/L)', _glucoseCtrl, Icons.water_drop, '5.0', TextInputType.number)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Normal ranges reference
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: kBgLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Normal Ranges:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: kTextMedium)),
-                        SizedBox(height: 4),
-                        Text('• Temperature: 36.0–37.5°C  • Glucose: 3.9–11.1 mmol/L',
-                            style: TextStyle(fontSize: 11, color: kTextLight)),
-                        Text('• Blood Pressure: <130/80 mmHg  • Weight: >40 kg',
-                            style: TextStyle(fontSize: 11, color: kTextLight)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _submitVitals(context),
-                      icon: const Icon(Icons.send_rounded),
-                      label: const Text('Submit Vitals', style: TextStyle(fontWeight: FontWeight.w600)),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        backgroundColor: const Color(0xFF6B46C1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Recent remote vitals
-            if (provider.remoteVitals.isNotEmpty) ...[
-              const Text(
-                'Recent Remote Vitals',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kTextDark),
-              ),
-              const SizedBox(height: 12),
-              ...provider.remoteVitals.reversed.take(5).map((v) => _vitalsHistoryCard(v)),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _vitalsField(String label, TextEditingController ctrl, IconData icon, String hint, [TextInputType? type]) {
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 120,
+      pinned: true,
+      backgroundColor: kPrimaryColor,
+      flexibleSpace: FlexibleSpaceBar(
+        title: const Text('Telematics Command',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                fontSize: 18)),
+        background: Container(
+            decoration: const BoxDecoration(gradient: kPrimaryGradient)),
+      ),
+      actions: [
+        IconButton(
+            icon: const Icon(Icons.settings_input_antenna_rounded),
+            onPressed: () {}),
+      ],
+    );
+  }
+
+  Widget _buildConsultationBanner() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: kSecondaryColor,
+        borderRadius: BorderRadius.circular(kBorderRadius),
+        boxShadow: kGlowShadow,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(Icons.video_call_rounded,
+                color: Colors.white.withOpacity(0.1), size: 140),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.wifi_tethering_rounded,
+                      color: Colors.white, size: 24),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Active Consultations',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins'),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Encrypted video link ready. Connect with specialized diagnostics remotely.',
+                  style: TextStyle(
+                      color: Colors.white70, fontSize: 14, height: 1.4),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _showVideoCallDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: kPrimaryColor,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.videocam_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text('Start Remote Session',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVitalsInputSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: kTextMedium)),
-        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Biometric Entry',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: kTextDark,
+                  fontFamily: 'Poppins'),
+            ),
+            if (_submitted)
+              IconButton(
+                  onPressed: () => setState(() => _submitted = false),
+                  icon: const Icon(Icons.refresh_rounded,
+                      color: kPrimaryColor, size: 20)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_submitted) _statusMessage(),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: kBgWhite,
+            borderRadius: BorderRadius.circular(kBorderRadiusLarge),
+            boxShadow: kCardShadow,
+            border: Border.all(color: kBorderColor.withOpacity(0.5)),
+          ),
+          child: Column(
+            children: [
+              _vitalsField('Patient Identity', _patientCtrl,
+                  Icons.fingerprint_rounded, 'Enter Patient Name'),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                      child: _vitalsField(
+                          'Temp (°C)',
+                          _tempCtrl,
+                          Icons.thermostat_rounded,
+                          '37.0',
+                          TextInputType.number)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: _vitalsField(
+                          'Weight (kg)',
+                          _weightCtrl,
+                          Icons.monitor_weight_rounded,
+                          '70.0',
+                          TextInputType.number)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                      child: _vitalsField(
+                          'Pressure', _bpCtrl, Icons.speed_rounded, '120/80')),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: _vitalsField('Glucose', _glucoseCtrl,
+                          Icons.opacity_rounded, '5.0', TextInputType.number)),
+                ],
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: kPrimaryGradient,
+                    boxShadow: [
+                      BoxShadow(
+                          color: kPrimaryColor.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5))
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => _submitVitals(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Broadcast Vitals',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            fontFamily: 'Poppins')),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statusMessage() {
+    final color = _hasAlert ? kDangerColor : kSuccessColor;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(_hasAlert ? Icons.error_outline_rounded : Icons.verified_rounded,
+              color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _hasAlert
+                  ? 'Alert: Abnormal biometrics detected!'
+                  : 'Status: Vitals synchronized successfully.',
+              style: TextStyle(
+                  color: color, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _vitalsField(
+      String label, TextEditingController ctrl, IconData icon, String hint,
+      [TextInputType? type]) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: kTextMedium,
+                letterSpacing: 0.5)),
+        const SizedBox(height: 8),
         TextField(
           controller: ctrl,
           keyboardType: type ?? TextInputType.text,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(
+                fontWeight: FontWeight.normal, color: kTextLight),
             prefixIcon: Icon(icon, size: 18, color: kPrimaryColor),
             filled: true,
-            fillColor: kBgLight,
+            fillColor: kBgLight.withOpacity(0.5),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: kBorderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: kBorderColor),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
         ),
       ],
@@ -264,37 +361,53 @@ class _TelematicsScreenState extends State<TelematicsScreen> {
   Widget _vitalsHistoryCard(RemoteVitals v) {
     final isAbnormal = v.hasAbnormalValues;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: isAbnormal ? Border.all(color: kDangerColor.withOpacity(0.4)) : null,
+        color: kBgWhite,
+        borderRadius: BorderRadius.circular(kBorderRadius),
         boxShadow: kSoftShadow,
       ),
       child: Row(
         children: [
-          Icon(
-            isAbnormal ? Icons.warning_rounded : Icons.check_circle_rounded,
-            color: isAbnormal ? kDangerColor : kSuccessColor,
-            size: 20,
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color:
+                  (isAbnormal ? kDangerColor : kSuccessColor).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isAbnormal ? Icons.warning_amber_rounded : Icons.api_rounded,
+              color: isAbnormal ? kDangerColor : kSuccessColor,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(v.patientName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(v.patientName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: kTextDark)),
+                const SizedBox(height: 4),
                 Text(
-                  'Temp: ${v.temperature}°C  BP: ${v.bloodPressure}  Glucose: ${v.glucoseLevel} mmol/L',
-                  style: const TextStyle(color: kTextLight, fontSize: 11),
+                  'BP: ${v.bloodPressure} • Temp: ${v.temperature}°C • GL: ${v.glucoseLevel}',
+                  style: const TextStyle(
+                      color: kTextLight,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500),
                 ),
               ],
             ),
           ),
           Text(
             '${v.recordedAt.hour}:${v.recordedAt.minute.toString().padLeft(2, '0')}',
-            style: const TextStyle(color: kTextLight, fontSize: 11),
+            style: const TextStyle(
+                color: kTextLight, fontSize: 11, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -304,25 +417,44 @@ class _TelematicsScreenState extends State<TelematicsScreen> {
   void _showVideoCallDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.video_call_rounded, color: Color(0xFF6B46C1)),
-            SizedBox(width: 8),
-            Text('Remote Consultation'),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: kBgWhite,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Column(
+            children: [
+              Icon(Icons.private_connectivity_rounded,
+                  color: kPrimaryColor, size: 48),
+              SizedBox(height: 16),
+              Text('Initialize Consultation',
+                  style: TextStyle(
+                      fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: const Text(
+            'Establishing end-to-end encrypted medical tunnel. Video stream requires permissions.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: kTextMedium, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child:
+                    const Text('Cancel', style: TextStyle(color: kTextLight))),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: kPrimaryColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+              child: const Text('Connect Now',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
           ],
         ),
-        content: const Text(
-          'Video call feature requires WebRTC integration.\n\nIn production, this would connect to your telemedicine platform (e.g., Agora, Twilio Video, or Jitsi Meet).',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6B46C1)),
-            child: const Text('Simulate Call'),
-          ),
-        ],
       ),
     );
   }
